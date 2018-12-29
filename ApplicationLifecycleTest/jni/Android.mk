@@ -4,7 +4,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE    := native-activity
 
-FILE_LIST := $(wildcard $(LOCAL_PATH)/../*.cpp)
+FILE_LIST := $(wildcard $(LOCAL_PATH)/../*.c)
 LOCAL_SRC_FILES := $(FILE_LIST:$(LOCAL_PATH)/%=%)
 
 LOCAL_CFLAGS	:= -DGLES1 -DANDROID
