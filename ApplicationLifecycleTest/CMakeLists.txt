@@ -6,7 +6,7 @@ project(lifecycle)
 include_directories(../../glesgae)
 link_directories(../../glesgae/lib)
 
-set(CMAKE_C_FLAGS "-Wall -Werror -Wpedantic -Wno-variadic-macros -Wcast-align -Wredundant-decls -Wextra -std=gnu89 -pedantic-errors")
+set(CMAKE_C_FLAGS "-Wall -Werror -Wpedantic -Wno-variadic-macros -Wcast-align -Wredundant-decls -Wextra -pedantic-errors")
 
 # Compile Options
 option(USE_SDL2 "Use SDL2 Bindings" OFF)
@@ -49,7 +49,7 @@ endif (USE_SDL2GL)
 add_executable(lifecycle main.c)
 
 if (USE_SDL2)
-	target_link_libraries(lifecycle glesgae ${SDL2_LIBRARIES})
+	target_link_libraries(lifecycle glesgae ${SDL2_LIBRARIES} m)
 endif (USE_SDL2)
 
 if (USE_OGL)

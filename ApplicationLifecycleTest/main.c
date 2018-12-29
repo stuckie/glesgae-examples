@@ -17,10 +17,13 @@
 #include <Graphics/State/RenderState.h>
 #include <Graphics/Window/RenderWindow.h>
 #include <Input/InputSystem.h>
+#include <Input/Controller.h>
 #include <Maths/Matrix.h>
 #include <States/StateStack.h>
 #include <Time/Clock.h>
+#include <Utils/Array.h>
 #include <Utils/Logger.h>
+#include <Utils/Tiled/TiledJsonLoader.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,6 +75,16 @@ PLATFORM_MAIN
 
 	PLATFORM_LOOP
 PLATFORM_END
+
+
+GAE_Tiled_t* tilemap;
+void loadTilemap(void) {
+	/*unsigned int index = 0U;*/
+	/*unsigned int size = 0U;*/
+	
+	GAE_File_t* mapFile = GAE_File_create("test.json");
+	tilemap = GAE_TiledParser_create(mapFile);
+}
 
 void setLifecycle()
 {
@@ -131,8 +144,8 @@ void onWindowCreate()
 	
 	GAE_PLATFORM->graphicsSystem->renderer->state->camera = GAE_Camera_create(GAE_CAMERA_TYPE_2D);
 	GAE_PLATFORM->graphicsSystem->renderer->state->camera->left = 0.0F;
-	GAE_PLATFORM->graphicsSystem->renderer->state->camera->right = 480.0F;
-	GAE_PLATFORM->graphicsSystem->renderer->state->camera->bottom = 320.0F;
+	GAE_PLATFORM->graphicsSystem->renderer->state->camera->right = 1.0F;
+	GAE_PLATFORM->graphicsSystem->renderer->state->camera->bottom = 1.0F;
 	GAE_PLATFORM->graphicsSystem->renderer->state->camera->top = 0.0F;
 #endif
 
@@ -145,11 +158,21 @@ void onWindowCreate()
 	GAE_PLATFORM->logger = GAE_Logger_create();
 }
 
+void drawTilemap()
+{
+	unsigned int layerCount = GAE_Array_length(tilemap->layers);
+	unsigned int index = 0U;
+
+	for (index = 0U; index < layerCount; ++index)
+		GAE_TiledParser_draw(tilemap, GAE_PLATFORM->graphicsSystem->renderer, index);
+}
+
 GAE_Sprite_t* sprite;
 void onStart()
 {
     printf("onStart\n");
 	sprite = GAE_Sprite_create("assets/Texture.bmp");
+	loadTilemap();
 }
 
 void onResume()
@@ -160,18 +183,18 @@ void onResume()
 int count = 0;
 GAE_BOOL onLoop()
 {
+	GAE_Keyboard_t* keyboard = GAE_PLATFORM->inputSystem->keyboard;
+
 	if (0 != GAE_PLATFORM->eventSystem)
 		GAE_EventSystem_update(GAE_PLATFORM->eventSystem);
-
+#if defined(GLX)
+	GAE_Camera_update(GAE_PLATFORM->graphicsSystem->renderer->state->camera);
+#endif
+	drawTilemap();
 	GAE_GraphicsSystem_drawSprite(GAE_PLATFORM->graphicsSystem, sprite);
 	GAE_RenderContext_update(GAE_PLATFORM->graphicsSystem->context);
 
-#if defined(SDL2)
-	SDL_Delay(10);
-#endif
-    ++count;
-    if (count > 120) return GAE_FALSE;
-    return GAE_TRUE;
+    return !(keyboard->keys[GAE_KEY_ESCAPE]);
 }
 
 void onPause()
