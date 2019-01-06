@@ -12,6 +12,7 @@ set(CMAKE_C_FLAGS "-Wall -Werror -Wpedantic -Wno-variadic-macros -Wcast-align -W
 option(USE_SDL2 "Use SDL2 Bindings" OFF)
 option(USE_OGL "Use OpenGL Bindings" OFF)
 option(USE_SDL2GL "Use SDL2 with platform GL" OFF)
+option(USE_EMSCRIPTEN " Use Emscripten" OFF)
 
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
@@ -29,6 +30,13 @@ if (USE_SDL2)
 	find_package(SDL2 REQUIRED)
 	include_directories(${SDL2_INCLUDE_DIRS})
 endif (USE_SDL2)
+
+# Emscripten
+if (USE_EMSCRIPTEN)
+	add_definitions(-DSDL2)
+	add_definitions(-s USE_SDL=2)
+	set(CMAKE_EXECUTABLE_SUFFIX ".html")
+endif (USE_EMSCRIPTEN)
 
 # OGL specifics
 if (USE_OGL)
@@ -57,4 +65,12 @@ if (USE_OGL)
 		target_link_libraries(lifecycle glesgae m X11 GL)
 	endif (UNIX)
 endif (USE_OGL)
+
+if (USE_EMSCRIPTEN)
+	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION .)
+	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test.json DESTINATION .)
+	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tiles.png DESTINATION .)
+	target_link_libraries(lifecycle glesgae m)
+	set_target_properties(lifecycle PROPERTIES LINK_FLAGS "-s USE_SDL=2 --preload-file assets --preload-file test.json --preload-file tiles.png --bind")
+endif (USE_EMSCRIPTEN)
 
