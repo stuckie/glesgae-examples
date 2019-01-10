@@ -19,8 +19,10 @@
 #include <Input/InputSystem.h>
 #include <Input/Controller.h>
 #include <Maths/Matrix.h>
+#include <Maths/Rect.h>
 #include <States/StateStack.h>
 #include <Time/Clock.h>
+#include <Time/Timer.h>
 #include <Utils/Array.h>
 #include <Utils/Logger.h>
 #include <Utils/Tiled/TiledJsonLoader.h>
@@ -168,10 +170,32 @@ void drawTilemap()
 }
 
 GAE_Sprite_t* sprite;
+GAE_Texture_t* tex;
+GAE_Sprite_t* createSprite(const char* texture)
+{
+	GAE_Sprite_t* s = GAE_Sprite_create();
+	tex = GAE_Texture_create(texture);
+
+	/* Sprite takes ownership of the frames */
+	GAE_Sprite_addFrame(s, GAE_Frame_create(tex, 0, 0, 128, 128));
+	GAE_Sprite_addFrame(s, GAE_Frame_create(tex, 128, 0, 128, 128));
+	GAE_Sprite_addFrame(s, GAE_Frame_create(tex, 0, 128, 128, 128));
+	GAE_Sprite_addFrame(s, GAE_Frame_create(tex, 128, 128, 128, 128));
+
+	s->dest->w = 128;
+	s->dest->h = 128;
+
+	s->animSpeed = 1.0F;
+
+	return s;
+}
+
+GAE_Timer_t* mainTimer;
 void onStart()
 {
     printf("onStart\n");
-	sprite = GAE_Sprite_create("assets/Texture.bmp");
+	sprite = createSprite("assets/Texture.bmp");
+	mainTimer = GAE_Timer_create();
 	loadTilemap();
 }
 
@@ -180,10 +204,11 @@ void onResume()
 	printf("onResume\n");
 }
 
-int count = 0;
 GAE_BOOL onLoop()
 {
 	GAE_Keyboard_t* keyboard = GAE_PLATFORM->inputSystem->keyboard;
+	GAE_Clock_update(GAE_PLATFORM->mainClock);
+	GAE_Timer_update(mainTimer, GAE_PLATFORM->mainClock);
 
 	if (0 != GAE_PLATFORM->eventSystem)
 		GAE_EventSystem_update(GAE_PLATFORM->eventSystem);
@@ -191,6 +216,7 @@ GAE_BOOL onLoop()
 	GAE_Camera_update(GAE_PLATFORM->graphicsSystem->renderer->state->camera);
 #endif
 	drawTilemap();
+	GAE_Sprite_update(sprite, mainTimer->deltaTime);
 	GAE_GraphicsSystem_drawSprite(GAE_PLATFORM->graphicsSystem, sprite);
 	GAE_RenderContext_update(GAE_PLATFORM->graphicsSystem->context);
 
@@ -210,4 +236,19 @@ void onStop()
 void onDestroy()
 {
     printf("onDestroy\n");
+	GAE_InputSystem_removeKeyboard(GAE_PLATFORM->inputSystem, GAE_PLATFORM->inputSystem->keyboard);
+	GAE_InputSystem_removePointer(GAE_PLATFORM->inputSystem, GAE_PLATFORM->inputSystem->pointer);
+	GAE_InputSystem_delete(GAE_PLATFORM->inputSystem);
+	GAE_EventSystem_delete(GAE_PLATFORM->eventSystem);
+	GAE_Sprite_delete(sprite);
+	GAE_Texture_delete(tex);
+	GAE_GraphicsSystem_delete(GAE_PLATFORM->graphicsSystem);
+	GAE_StateStack_delete(GAE_PLATFORM->stateStack);
+	GAE_Timer_delete(mainTimer);
+	GAE_Clock_delete(GAE_PLATFORM->mainClock);
+	GAE_Logger_delete(GAE_PLATFORM->logger);
+
+#if defined(SDL2)
+	SDL_Quit();
+#endif
 }
