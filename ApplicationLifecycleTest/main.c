@@ -173,7 +173,7 @@ GAE_Sprite_t* sprite;
 GAE_Texture_t* tex;
 GAE_Sprite_t* createSprite(const char* texture)
 {
-	GAE_Sprite_t* s = GAE_Sprite_create();
+	GAE_Sprite_t* s = GAE_Sprite_create(128, 128);
 	tex = GAE_Texture_create(texture);
 
 	/* Sprite takes ownership of the frames */
@@ -181,9 +181,6 @@ GAE_Sprite_t* createSprite(const char* texture)
 	GAE_Sprite_addFrame(s, GAE_Frame_create(tex, 128, 0, 128, 128));
 	GAE_Sprite_addFrame(s, GAE_Frame_create(tex, 0, 128, 128, 128));
 	GAE_Sprite_addFrame(s, GAE_Frame_create(tex, 128, 128, 128, 128));
-
-	s->dest->w = 128;
-	s->dest->h = 128;
 
 	s->animSpeed = 1.0F;
 
@@ -195,7 +192,7 @@ void onStart()
 {
     printf("onStart\n");
 	sprite = createSprite("assets/Texture.bmp");
-	mainTimer = GAE_Timer_create();
+	mainTimer = GAE_Timer_create(GAE_PLATFORM->mainClock);
 	loadTilemap();
 }
 
@@ -252,3 +249,4 @@ void onDestroy()
 	SDL_Quit();
 #endif
 }
+
