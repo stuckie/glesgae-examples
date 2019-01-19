@@ -1,6 +1,7 @@
 #include <Platform/Platform.h>
 #include <Platform/Lifecycle.h>
 
+#include <Buffer/Buffer.h>
 #include <Events/EventSystem.h>
 #include <File/File.h>
 #include <Graphics/Camera.h>
@@ -84,8 +85,12 @@ void loadTilemap(void) {
 	/*unsigned int index = 0U;*/
 	/*unsigned int size = 0U;*/
 	
-	GAE_File_t* mapFile = GAE_File_create("test.json");
-	tilemap = GAE_TiledParser_create(mapFile);
+	GAE_File_t* mapFile = GAE_File_create("test.json", GAE_FILE_OPEN_READ, GAE_FILE_ASCII, 0);
+	GAE_Buffer_t* buffer = GAE_Buffer_create(mapFile->fileSize);
+	GAE_File_read(mapFile, buffer, mapFile->fileSize, 0);
+	tilemap = GAE_TiledParser_create(buffer);
+	GAE_Buffer_delete(buffer);
+	GAE_File_delete(mapFile);
 }
 
 void setLifecycle()
@@ -174,7 +179,15 @@ GAE_Texture_t* tex;
 GAE_Sprite_t* createSprite(const char* texture)
 {
 	GAE_Sprite_t* s = GAE_Sprite_create(128, 128);
-	tex = GAE_Texture_create(texture);
+	tex = GAE_Texture_create();
+
+	GAE_File_t* file = GAE_File_create(texture, GAE_FILE_OPEN_READ, GAE_FILE_BINARY, 0);
+	GAE_Buffer_t* data = GAE_Buffer_create(file->fileSize);
+	GAE_File_read(file, data, GAE_FILE_READ_ALL, 0);
+	GAE_File_delete(file);
+
+	GAE_Texture_load(tex, data, GAE_TEXTURE_FROM_FILE, GAE_TEXTURE_FROM_FILE);
+	GAE_Buffer_delete(data);
 
 	/* Sprite takes ownership of the frames */
 	GAE_Sprite_addFrame(s, GAE_Frame_create(tex, 0, 0, 128, 128));
