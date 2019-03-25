@@ -179,13 +179,13 @@ GAE_Texture_t* tex;
 GAE_Sprite_t* createSprite(const char* texture)
 {
 	GAE_Sprite_t* s = GAE_Sprite_create(128, 128);
-	tex = GAE_Texture_create();
 
 	GAE_File_t* file = GAE_File_create(texture, GAE_FILE_OPEN_READ, GAE_FILE_BINARY, 0);
 	GAE_Buffer_t* data = GAE_Buffer_create(file->fileSize);
 	GAE_File_read(file, data, GAE_FILE_READ_ALL, 0);
 	GAE_File_delete(file);
 
+	tex = GAE_Texture_create();
 	GAE_Texture_load(tex, data, GAE_TEXTURE_FROM_FILE, GAE_TEXTURE_FROM_FILE);
 	GAE_Buffer_delete(data);
 

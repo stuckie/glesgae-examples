@@ -6,13 +6,14 @@ project(lifecycle)
 include_directories(../../glesgae)
 link_directories(../../glesgae/lib)
 
-set(CMAKE_C_FLAGS "-Wall -Werror -Wpedantic -Wno-variadic-macros -Wcast-align -Wredundant-decls -Wextra -pedantic-errors")
+set(CMAKE_C_FLAGS "-Wall -Werror -Wpedantic -Wno-variadic-macros -Wcast-align -Wredundant-decls -Wextra -std=c89 -pedantic -pedantic-errors")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
 
 # Compile Options
 option(USE_SDL2 "Use SDL2 Bindings" OFF)
 option(USE_OGL "Use OpenGL Bindings" OFF)
 option(USE_SDL2GL "Use SDL2 with platform GL" OFF)
-option(USE_EMSCRIPTEN " Use Emscripten" OFF)
+option(USE_EMSCRIPTEN "Use Emscripten" OFF)
 
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
@@ -36,6 +37,7 @@ if (USE_EMSCRIPTEN)
 	add_definitions(-DSDL2)
 	add_definitions(-s USE_SDL=2)
 	set(CMAKE_EXECUTABLE_SUFFIX ".html")
+	set(CMAKE_C_FLAGS "-Wall -Werror -Wpedantic -Wno-variadic-macros -Wcast-align -Wredundant-decls -Wextra -pedantic -pedantic-errors")
 endif (USE_EMSCRIPTEN)
 
 # OGL specifics
